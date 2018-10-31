@@ -3,7 +3,8 @@ import Camera, Object
 class Scene:
 
     def __init__(self):
-        self._camera = Camera.Camera((0,0,0), (0,0,1), (0,1,0), 28, 16, 9)
+        #self._camera = Camera.Camera((0,0,0), (0,0,1), (0,1,0), 28, 4, 3)
+        self._camera = Camera.Camera()
         self._bgColor = [0, 0, 0]
         self._ambientLight = (.1, .1, .1)
         self._objects = {}
@@ -43,3 +44,7 @@ class Scene:
 
     def addObject(self, object):
         self._objects.add(object)
+
+
+    def render(self):
+        return self._camera.renderScene(self)
