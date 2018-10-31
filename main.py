@@ -1,7 +1,11 @@
-import RayTracer as rt
+import RayTracer
 import Scene, Object
 
-charles = rt.RayTracer()
+rt = RayTracer.RayTracer()
 
 
-charles.renderToFile(Scene.Scene(), 'generatedImages/raytracerTest.ppm')
+scene = Scene.Scene()
+print(scene)
+scene.addObject(Object.Sphere())
+
+rt.renderToFile(scene, 'generatedImages/raytracerTest.ppm')

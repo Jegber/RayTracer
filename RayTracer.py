@@ -16,4 +16,4 @@ class RayTracer:
 
     # Renders a scene to a file.
     def renderToFile(self, scene, filepath):
-        ppm.RGBNumpyArrayToPPMFile(self._scene.render(), filepath)
+        ppm.RGBNumpyArrayToPPMFile(scene.render(), filepath)

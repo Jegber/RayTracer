@@ -1,30 +1,30 @@
 import numpy as np
 
-class Ray(ray):
+class Ray(object):
 
     def __init__(self, origin, direction):
-        self._origin = origin
-        self._directon = direction
-
+        self.origin = origin
+        self.direction = direction
+"""
     @property
     def origin(self):
-        return self._origin
+        return self.origin
     @origin.setter
     def origin(self, origin):
-        self._origin = origin
+        self.origin = origin
 
 
     @property
     def direction(self):
-        return self._direction
+        return self.direction
     @direction.setter
     def direction(self, direction):
-        self._direction = direction
-
+        self.direction = direction
+"""
 
 class PrimaryRay(Ray):
     def __init__(self, origin, direction):
-        Ray.__init__(self, origin, direction)
+        super().__init__(origin, direction)
 
 
 
@@ -32,7 +32,7 @@ class PrimaryRay(Ray):
 
 class ReflectedRay(Ray):
     def __init__(self, origin, direction):
-        Ray.__init__(self, origin, direction)
+        super().__init__(origin, direction)
 
 
 
@@ -40,7 +40,7 @@ class ReflectedRay(Ray):
 
 class TransmittedRay(Ray):
     def __init__(self, origin, direction):
-        Ray.__init__(self, origin, direction)
+        super().__init__(origin, direction)
 
 
 
@@ -48,4 +48,4 @@ class TransmittedRay(Ray):
 
 class ShadowRay(Ray):
     def __init__(self, origin, direction):
-        Ray.__init__(self, origin, direction)
+        super().__init__(origin, direction)
