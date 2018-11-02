@@ -5,7 +5,7 @@ import Ray
 
 class Camera:
 
-    def __init__(self, lookAt=np.array([0,0,-1]), lookFrom=np.array([0,0,0]), lookUp=np.array([0,1,0]), fov=90, xRes=10, yRes=10):
+    def __init__(self, lookAt=np.array([0,0,-1]), lookFrom=np.array([0,0,0]), lookUp=np.array([0,1,0]), fov=90, xRes=1000, yRes=1000):
         self.lookAt = np.array([lookAt[0], lookAt[1], lookAt[2], 1])
         self.lookFrom = np.array([lookFrom[0], lookFrom[1], lookFrom[2], 1])
         self.lookUp = np.array([lookUp[0], lookUp[1], lookUp[2], 1])
@@ -26,7 +26,8 @@ class Camera:
         print("Generating Window")
         self.window = np.ones((self.yRes, self.xRes, 4))
 
-        windowWidth = 2 * math.tan(self.fov / 2)
+        windowWidth = 2 * math.tan(np.deg2rad(self.fov) / 2)
+        print("windowWidth: " + str(windowWidth))
         distanceBetweenPoints = windowWidth / (self.xRes-1)
         leftMostX = 0 - (windowWidth / 2)
         topMostY  = distanceBetweenPoints * ((self.yRes / 2) - .5)
@@ -83,7 +84,8 @@ class Camera:
         for row in range(self.yRes):
             for col in range(self.xRes):
                 self.renderPixel(scene, row, col)
-
+                #print(str(self.window[row][col]) + "   ")
+            #print("\n")
         return self.image
 
 

@@ -4,7 +4,15 @@ class Ray(object):
 
     def __init__(self, origin, direction):
         self.origin = origin
-        self.direction = direction
+        direction[3] = 0
+        self.direction = self.normalized(direction)
+        direction[3] = 1
+
+
+    def normalized(self, a, axis=-1, order=2):
+        l2 = np.atleast_1d(np.linalg.norm(a, order, axis))
+        l2[l2==0] = 1
+        return (a / np.expand_dims(l2, axis))[0]
 """
     @property
     def origin(self):
@@ -32,16 +40,17 @@ class PrimaryRay(Ray):
         closestIntersectionDist = None
         for renderable in scene.objects:
             intersectionDist = renderable.rayIntersectionDistance(self)
-            print(intersectionDist)
-            if intersectionDist is None: continue
-            if intersectionDist > 0: # intersections behind the camera are bad
-                if (closestIntersectionDist is None) or (intersectionDist < closestIntersectionDist):
-                    closestIntersectionDist = intersectionDist
-                    closestObject = renderable
-
+            #print(intersectionDist); print()
+            if intersectionDist is None: continue # If the ray didn't hit anything
+            if closestIntersectionDist is None: closestIntersectionDist = intersectionDist
+            if intersectionDist <= closestIntersectionDist:
+                closestIntersectionDist = intersectionDist
+                closestObject = renderable
 
         if closestObject is None:
             return scene.bgColor
+
+
 
         return [0, 0, 255]
 
