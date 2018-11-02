@@ -84,43 +84,20 @@ class Camera:
         return
 
 
+
     def renderScene(self, scene):
         # Cast Rays
 
-
-        sceneRowCol = []
         for row in range(self.yRes):
             for col in range(self.xRes):
-                sceneRowCol.append([scene, row, col])
+                self.renderPixel(scene, row, col)
                 #print(str(self.window[row][col]) + "   ")
             #print("\n")
-
-        pool = Pool()
-        pool.map(self.renderPixel, sceneRowCol)
-
-        """
-        for row in range(self.yRes):
-            for col in range(self.xRes):
-                self.renderPixel(sceneRowCol)
-                #print(str(self.window[row][col]) + "   ")
-            #print("\n")
-        """
 
         return self.image
 
-    def renderPixel(self, src):
-        print("rendering pixel")
-        scene = src[0]
-        row = src[1]
-        col = src[2]
-        primaryRay = Ray.PrimaryRay(self.eye, self.window[row][col])
 
-        self.image[row][col] = primaryRay.getColor(scene)
 
-    """
     def renderPixel(self, scene, row, col):
         primaryRay = Ray.PrimaryRay(self.eye, self.window[row][col])
-
         self.image[row][col] = primaryRay.getColor(scene)
-    """
-        #<process>
