@@ -95,9 +95,8 @@ class Camera:
                 #print(str(self.window[row][col]) + "   ")
             #print("\n")
 
-        if __name__ == '__main__':
-            pool = Pool(os.cpu_count()-1)
-            pool.map(renderPixel, sceneRowCol)
+        pool = Pool()
+        pool.map(self.renderPixel, sceneRowCol)
 
         """
         for row in range(self.yRes):
@@ -110,6 +109,7 @@ class Camera:
         return self.image
 
     def renderPixel(self, src):
+        print("rendering pixel")
         scene = src[0]
         row = src[1]
         col = src[2]
