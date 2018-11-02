@@ -1,6 +1,3 @@
-
-
-
 def RGBPythonArrayToPPMFile(rgb, filepath):
 
     f = open(filepath, 'w')
