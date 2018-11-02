@@ -3,10 +3,11 @@ import math
 import Ray
 import random
 from tqdm import tqdm
+from multiprocessing import Pool
 
 class Camera:
 
-    def __init__(self, lookAt=np.array([0,0,-1]), lookFrom=np.array([0,0,0]), lookUp=np.array([0,1,0]), fov=90, xRes=1000, yRes=1000, aa=1):
+    def __init__(self, lookAt=np.array([0,0,-1]), lookFrom=np.array([0,0,0]), lookUp=np.array([0,1,0]), fov=90, xRes=10, yRes=10, aa=0):
         self.lookAt = np.array([lookAt[0], lookAt[1], lookAt[2], 1])
         self.lookFrom = np.array([lookFrom[0], lookFrom[1], lookFrom[2], 1])
         self.lookUp = np.array([lookUp[0], lookUp[1], lookUp[2], 1])
@@ -85,18 +86,41 @@ class Camera:
 
     def renderScene(self, scene):
         # Cast Rays
-        for row in tqdm(range(self.yRes)):
+
+
+        sceneRowCol = []
+        for row in range(self.yRes):
             for col in range(self.xRes):
-                self.renderPixel(scene, row, col)
+                sceneRowCol.append([scene, row, col])
                 #print(str(self.window[row][col]) + "   ")
             #print("\n")
+
+        if __name__ == '__main__':
+            pool = Pool(os.cpu_count()-1)
+            pool.map(renderPixel, sceneRowCol)
+
+        """
+        for row in range(self.yRes):
+            for col in range(self.xRes):
+                self.renderPixel(sceneRowCol)
+                #print(str(self.window[row][col]) + "   ")
+            #print("\n")
+        """
+
         return self.image
 
-
-
-    def renderPixel(self, scene, row, col):
+    def renderPixel(self, src):
+        scene = src[0]
+        row = src[1]
+        col = src[2]
         primaryRay = Ray.PrimaryRay(self.eye, self.window[row][col])
 
         self.image[row][col] = primaryRay.getColor(scene)
 
-        return
+    """
+    def renderPixel(self, scene, row, col):
+        primaryRay = Ray.PrimaryRay(self.eye, self.window[row][col])
+
+        self.image[row][col] = primaryRay.getColor(scene)
+    """
+        #<process>
