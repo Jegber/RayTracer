@@ -1,11 +1,12 @@
 import numpy as np
 import math
 import Ray
-
+import random
+from tqdm import tqdm
 
 class Camera:
 
-    def __init__(self, lookAt=np.array([0,0,-1]), lookFrom=np.array([0,0,0]), lookUp=np.array([0,1,0]), fov=90, xRes=1000, yRes=1000):
+    def __init__(self, lookAt=np.array([0,0,-1]), lookFrom=np.array([0,0,0]), lookUp=np.array([0,1,0]), fov=90, xRes=1000, yRes=1000, aa=1):
         self.lookAt = np.array([lookAt[0], lookAt[1], lookAt[2], 1])
         self.lookFrom = np.array([lookFrom[0], lookFrom[1], lookFrom[2], 1])
         self.lookUp = np.array([lookUp[0], lookUp[1], lookUp[2], 1])
@@ -15,6 +16,7 @@ class Camera:
         self.image = np.full((self.yRes, self.xRes, 3), 150)
         self.window = None
         self.eye = np.array([0,0,0,1])
+        self.aa = aa # anti-aliasing level based on random jitter
         self.generateWindow() # Generate the window's pixel center points
         self.positionCamera() # Move the camera into position
 
@@ -35,9 +37,11 @@ class Camera:
         # Create window with Eye at 0,0,0
         for row in range(self.yRes):
             for col in range(self.xRes):
+                yJig = self.aa * random.uniform(-distanceBetweenPoints, distanceBetweenPoints)
+                xJig = self.aa * random.uniform(-distanceBetweenPoints, distanceBetweenPoints)
                 self.window[row][col][2] = -1 # Window is -1 z away from the Eye
-                self.window[row][col][0] = leftMostX + (col * distanceBetweenPoints) # x
-                self.window[row][col][1] = topMostY - (row * distanceBetweenPoints) # y
+                self.window[row][col][0] = leftMostX + (col * distanceBetweenPoints) + xJig# x
+                self.window[row][col][1] = topMostY - (row * distanceBetweenPoints) + yJig# y
         return
 
 
@@ -81,7 +85,7 @@ class Camera:
 
     def renderScene(self, scene):
         # Cast Rays
-        for row in range(self.yRes):
+        for row in tqdm(range(self.yRes)):
             for col in range(self.xRes):
                 self.renderPixel(scene, row, col)
                 #print(str(self.window[row][col]) + "   ")
