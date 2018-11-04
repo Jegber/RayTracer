@@ -3,9 +3,7 @@ import numpy as np
 
 class Object(object):
 
-    def __init__(self, color=(255, 0, 0), diffuse = (1, 1, 1),
-                       specular = (1, 1, 1), phong = 4):
-        self.color = color
+    def __init__(self, diffuse = (1, 1, 1), specular = (1, 1, 1), phong = 4):
         self.diffuse = diffuse
         self.specular = specular
         self.phong = phong
@@ -17,16 +15,16 @@ class Object(object):
 
 class Sphere(Object):
 
-    def __init__(self, color=(255, 0, 0), diffuse = (1, 1, 1),
+    def __init__(self, diffuse = (1, 0, 0),
                  specular = (1, 1, 1), phong = 4,
-                 center=(0, 0, -2), radius=1):
-        super().__init__(color, diffuse, specular, phong)
+                 center=(1, 1, -10), radius=1):
+        super().__init__(diffuse, specular, phong)
         self.center = np.array([center[0], center[1], center[2], 1])
         self.radius = radius
 
 
-    # If ray intersects, returns the intersection distance. Else returns None.
-    def rayIntersectionDistance(self, ray):
+    # If ray intersects, returns the intersection distance and intersect point. Else returns None.
+    def rayIntersection(self, ray):
 
         o = ray.origin
         d = ray.direction
@@ -45,19 +43,20 @@ class Sphere(Object):
 
         #print("B: " + str(B) + "   C: " + str(C) + "   D: " + str(D))
 
-        if D < 0: return None
+        if D < 0: return (None, None)
 
         t_0 = (-B - np.sqrt(D)) / 2
 
         if t_0 <= 0:
             t_1 = (-B + np.sqrt(D)) / 2
-            if t_1 <= 0: return None
+            if t_1 <= 0: return (None, None)
             t_0 = t_1
 
         intersectionPoint = o + d*t_0
+        intersectionPoint[3] = 0
         intersectionDist = np.linalg.norm(intersectionPoint - o)
 
-        return intersectionDist
+        return (intersectionDist, intersectionPoint)
 
 
 
@@ -66,12 +65,12 @@ class Sphere(Object):
 
 class Triangle(Object):
 
-    def __init__(self, color=(255, 0, 0), diffuse = (1, 1, 1),
+    def __init__(self, diffuse = (1, 1, 1),
                  specular = (1, 1, 1), phong = 4,
                  vertex1=(.3, -.3, -.4),
                  vertex2=(0, .3, -.1),
                  vertex3=(-.3, -.3, .2) ):
-        super().__init__(color, diffuse, specular, phong)
+        super().__init__(diffuse, specular, phong)
         self.vertex1 = vertex1
         self.vertex2 = vertex2
         self.vertex3 = vertex3

@@ -7,7 +7,9 @@ from multiprocessing import Pool
 
 class Camera:
 
-    def __init__(self, lookAt=np.array([0,0,-1]), lookFrom=np.array([0,0,0]), lookUp=np.array([0,1,0]), fov=90, xRes=10, yRes=10, aa=0):
+    def __init__(self, lookAt=np.array([0,0,-1]), lookFrom=np.array([0,0,0]),
+                lookUp=np.array([0,1,0]), fov=28, xRes=1000, yRes=1000, aa=0,
+                rayBounces = 0 ):
         self.lookAt = np.array([lookAt[0], lookAt[1], lookAt[2], 1])
         self.lookFrom = np.array([lookFrom[0], lookFrom[1], lookFrom[2], 1])
         self.lookUp = np.array([lookUp[0], lookUp[1], lookUp[2], 1])
@@ -18,6 +20,7 @@ class Camera:
         self.window = None
         self.eye = np.array([0,0,0,1])
         self.aa = aa # anti-aliasing level based on random jitter
+        self.rayBounces = rayBounces
         self.generateWindow() # Generate the window's pixel center points
         self.positionCamera() # Move the camera into position
 
@@ -99,5 +102,6 @@ class Camera:
 
 
     def renderPixel(self, scene, row, col):
-        primaryRay = Ray.PrimaryRay(self.eye, self.window[row][col])
+        primaryRay = Ray.PrimaryRay(self.eye, self.window[row][col],
+                                    bouncesLeft = self.rayBounces)
         self.image[row][col] = primaryRay.getColor(scene)
