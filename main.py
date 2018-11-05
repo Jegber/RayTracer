@@ -5,8 +5,13 @@ rt = RayTracer.RayTracer()
 
 
 scene = Scene.Scene()
-scene.addObject(Object.Sphere(specular=[1, 1, 1], diffuse=[1, 0, 0], center = [.2, 0, -1.1], radius=.075, phong=4))
-scene.addObject(Object.Sphere(specular=[.0, .5, .5], diffuse=[.5, .5, .75], center = [1, 1, -9], radius=1, phong=5))
-scene.addObject(Object.Sphere(center = [0, 0, -10], radius=2, phong=32))
+
+#White Ball
+scene.addObject(Object.Sphere(center = [.35, 0, -1.1], radius=.05, diffuse=[1,1,1], specular=[1,1,1], phong=4))
+#Red Ball
+scene.addObject(Object.Sphere(center = [.2, 0, -1.1], radius=.075, diffuse=[1,0,0], specular=[.5,1,.5], phong=32))
+#Green Ball
+scene.addObject(Object.Sphere(center = [-.6, 0, -1], radius=.3, diffuse=[0,1,0], specular=[.5,1,.5], phong=32))
+
 
 rt.renderToFile(scene, 'generatedImages/raytracerTest.ppm')

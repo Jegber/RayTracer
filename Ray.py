@@ -16,36 +16,31 @@ class Ray(object):
         return (a / np.expand_dims(l2, axis))[0]
 
     def computePhongColor(self, intersection, scene, object):
-        R1 = (scene.directionToLight - intersection[1])
-        R1[3] = 0
-        R1_Normalized = Ray([0,0,0,0], R1).direction
-        R1_Normalized[3] = 0
         N = intersection[1] - object.center
         N_Normalized = Ray([0, 0, 0, 0], N).direction
-        N_Normalized[3] = 0
-        reflectionDirection = 2*N_Normalized * (N_Normalized.dot(scene.directionToLight - intersection[1])) - (scene.directionToLight - intersection[1])
-        reflectionDirection[3] = 0
-        reflectedRay = ReflectedRay(intersection[1], reflectionDirection + intersection[1],
+        reflectionDirection = 2*N_Normalized * (N_Normalized.dot(scene.directionToLight)) - (scene.directionToLight)
+        reflectedRay = ReflectedRay([0,0,0,0], reflectionDirection,
                                     bouncesLeft = self.bouncesLeft - 1)
-        """
-        if self.direction[0] == 0 and self.direction[1] == 0:
-            print("R1: ", R1)
-            print("R1_Normalized: ", R1_Normalized)
-            print("Closest intersection: ", intersection[1])
-            print("N: ", N)
-            print("N_Normalized: ", N_Normalized)
-            print("ReflectionDirection: ", reflectionDirection)
-            print("reflectedRayOrigin: ", reflectedRay.origin)
-            print("reflectedRayDirection: ", reflectedRay.direction)
-            print()
-        """
+        r_Normalized = reflectedRay.direction
+        e_Normalized = Ray([0,0,0,0], scene.camera.eye - intersection[1]).direction
+        shadow = 0 #if self.pointIsInShadow(intersection, scene) else 1
+
         color = [0, 0, 0]
         for rgb in range(3):
-            color[rgb] = object.diffuse[rgb] *    (scene.ambientLight[rgb] + scene.directionalLightColor[rgb] * max(0, N_Normalized.dot(scene.directionToLight)))   +scene.directionalLightColor[rgb]*object.specular[rgb]*max(0, scene.camera.eye.dot(R1))**object.phong
+            color[rgb] = object.diffuse[rgb]    *    (scene.ambientLight[rgb] + scene.directionalLightColor[rgb] * max(0, N_Normalized.dot(scene.directionToLight)))    +     scene.directionalLightColor[rgb]*object.specular[rgb]*max(0, np.dot(r_Normalized, e_Normalized))**object.phong
             color[rgb] = np.interp(color[rgb], (0, 1), (0, 255))
-        #print(color)
+
         return color
 
+
+    def pointIsInShadow(self, intersection, scene):
+        ray = PrimaryRay(intersection[1], intersection[1] + scene.directionToLight, 0)
+
+        return ray.getColor(scene)
+
+
+    def getClosestIntersection(self, scene):
+        pass
 
 
 
