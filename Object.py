@@ -26,9 +26,9 @@ class Sphere(Object):
     # If ray intersects, returns the intersection distance and intersect point. Else returns None.
     def rayIntersection(self, ray):
 
-        o = ray.origin
-        d = ray.direction
-        c = self.center
+        o = [0, 0, 0, 0]
+        d = ray.direction - ray.origin
+        c = self.center - ray.origin
         r = self.radius
 
 

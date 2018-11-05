@@ -2,10 +2,10 @@ import numpy as np
 
 class Ray(object):
 
-    def __init__(self, origin, direction, bouncesLeft = 0):
+    def __init__(self, origin, direction, bouncesLeft = 0, shouldNormalize=True):
         self.origin = origin
         direction[3] = 0
-        self.direction = self.normalized(direction)
+        self.direction = self.normalized(direction) if shouldNormalize == True else direction
         self.direction[3] = 0
         self.bouncesLeft = bouncesLeft
 
@@ -23,34 +23,43 @@ class Ray(object):
                                     bouncesLeft = self.bouncesLeft - 1)
         r_Normalized = reflectedRay.direction
         e_Normalized = Ray([0,0,0,0], scene.camera.eye - intersection[1]).direction
-        shadow = 0 #if self.pointIsInShadow(intersection, scene) else 1
+        shadow = 0 if self.pointIsInShadow(intersection[1], scene) else 1
+        #shadow = 1
 
         color = [0, 0, 0]
         for rgb in range(3):
-            color[rgb] = object.diffuse[rgb]    *    (scene.ambientLight[rgb] + scene.directionalLightColor[rgb] * max(0, N_Normalized.dot(scene.directionToLight)))    +     scene.directionalLightColor[rgb]*object.specular[rgb]*max(0, np.dot(r_Normalized, e_Normalized))**object.phong
+            color[rgb] = object.diffuse[rgb]    *    (scene.ambientLight[rgb] + shadow*scene.directionalLightColor[rgb] * max(0, N_Normalized.dot(scene.directionToLight)))    +     shadow*scene.directionalLightColor[rgb]*object.specular[rgb]*max(0, np.dot(r_Normalized, e_Normalized))**object.phong
             color[rgb] = np.interp(color[rgb], (0, 1), (0, 255))
 
         return color
 
 
-    def pointIsInShadow(self, intersection, scene):
-        ray = PrimaryRay(intersection[1], intersection[1] + scene.directionToLight, 0)
+    def pointIsInShadow(self, intersectionPoint, scene):
+        startingPoint = intersectionPoint
+        directionPoint = intersectionPoint + scene.directionToLight
+        directionPoint[3] = 0
+        offsetStartingPoint = [i for i in startingPoint + directionPoint * .0000001]
+        #print()
+        #print("offsetStartingPoint: ", offsetStartingPoint)
+        #print("offsetStartingPoint: ", offsetStartingPoint)
+        #print("directionToLight: ", scene.directionToLight)
+        #print("directionPoint: ", directionPoint)
 
-        return ray.getColor(scene)
+        shadowRay = Ray(offsetStartingPoint, directionPoint,  shouldNormalize = False)
+        #print("origin: ", shadowRay.origin, "   dest: ", shadowRay.direction)
+
+        closestCollisionPoint = shadowRay.getClosestIntersection(scene)[1]
+
+        if closestCollisionPoint is None: return False
+
+        if closestCollisionPoint[0] < .00001 and closestCollisionPoint[0] > -.00001 \
+           and closestCollisionPoint[1] < .00001 and closestCollisionPoint[1] > -.00001 \
+           and closestCollisionPoint[2] < .00001 and closestCollisionPoint[2] > -.00001: return False # This is a hack. For some reason rays kept colliding with [0,0,0]
+
+        return True # shadow ray collided with something. You're in shadow.
 
 
     def getClosestIntersection(self, scene):
-        pass
-
-
-
-
-class PrimaryRay(Ray):
-    def __init__(self, origin, direction, bouncesLeft):
-        super().__init__(origin, direction, bouncesLeft)
-
-
-    def getColor(self, scene):
         # Test collisions on each object.
         closestObject = None
         closestIntersection = (None, None)
@@ -61,6 +70,21 @@ class PrimaryRay(Ray):
             if intersection[0] <= closestIntersection[0]:
                 closestIntersection = intersection
                 closestObject = object
+                #distance               intersection point      object
+        return (closestIntersection[0], closestIntersection[1], closestObject)
+
+
+
+
+class PrimaryRay(Ray):
+    def __init__(self, origin, direction, bouncesLeft):
+        super().__init__(origin, direction, bouncesLeft)
+
+
+    def getColor(self, scene):
+        intersection = self.getClosestIntersection(scene)
+        closestObject = intersection[2]
+        closestIntersection = intersection[0:2:1]
 
         if closestObject is None: # If no collision, color bg
             return scene.bgColor
@@ -69,7 +93,6 @@ class PrimaryRay(Ray):
             return self.computePhongColor(closestIntersection, scene, closestObject)
 
 
-        #R1 = -(self.origin - closestIntersection[1])
         R1 = -(self.origin - closestIntersection[1])
         R1[3] = 0
         R1_Normalized = Ray([0,0,0,0], R1).direction
