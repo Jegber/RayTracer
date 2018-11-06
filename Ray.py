@@ -13,20 +13,26 @@ class Ray(object):
 
 
     def computePhongColor(self, intersection, scene, object):
-        if type(object) is Object.Triangle:
-            return [0, 0, 255]
+        color = [0, 0, 0]
 
-        N = intersection[1] - object.center
-        N_Normalized = Ray([0, 0, 0, 0], N).direction
+        if type(object) is Object.Triangle:
+            N_Normalized = np.append(object.plane_normal, 0)
+
+
+        if type(object) is Object.Sphere:
+            N = intersection[1] - object.center
+            N_Normalized = Ray([0, 0, 0, 0], N).direction
+
+
+
         reflectionDirection = 2*N_Normalized * (N_Normalized.dot(scene.directionToLight)) - (scene.directionToLight)
         reflectedRay = ReflectedRay([0,0,0,0], reflectionDirection,
-                                    bouncesLeft = self.bouncesLeft - 1)
+                                        bouncesLeft = self.bouncesLeft - 1)
         r_Normalized = reflectedRay.direction
         e_Normalized = Ray([0,0,0,0], scene.camera.eye - intersection[1]).direction
         shadow = 0 if self.pointIsInShadow(intersection[1], scene) else 1
-        #shadow = 1
 
-        color = [0, 0, 0]
+
         for rgb in range(3):
             color[rgb] = object.diffuse[rgb]    *    (scene.ambientLight[rgb] + shadow*scene.directionalLightColor[rgb] * max(0, N_Normalized.dot(scene.directionToLight)))    +     shadow*scene.directionalLightColor[rgb]*object.specular[rgb]*max(0, np.dot(r_Normalized, e_Normalized))**object.phong
             color[rgb] = np.interp(color[rgb], (0, 1), (0, 255))
