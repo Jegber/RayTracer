@@ -91,8 +91,10 @@ class Triangle(Object):
         d = np.dot(pn, self.vertex1)
         vo = (np.dot(pn, ray.origin[0:3:1]) + d)
         t = vo / vd
+        #print("t: ", t)
 
         if t < 0: return (intersectionDist, intersectionPoint)
+        if vd > 0: pn = -1 * pn
 
         r = ray.origin + ray.direction*t
 
@@ -105,7 +107,7 @@ class Triangle(Object):
 
         if (np.dot(pn, np.cross(edge1, C1)) > 0 and
             np.dot(pn, np.cross(edge2, C2)) > 0 and
-            np.dot(pn, np.cross(edge3, C3)) > 0     ): return (1, r)
+            np.dot(pn, np.cross(edge3, C3)) > 0     ): return (t, r)
 
 
         return (None, None)
