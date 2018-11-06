@@ -3,9 +3,10 @@ import numpy as np
 class Ray(object):
 
     def __init__(self, origin, direction, bouncesLeft = 0, shouldNormalize=True):
+        origin[3] = 0
         self.origin = origin
         direction[3] = 0
-        self.direction = self.normalized(direction) if shouldNormalize == True else direction
+        self.direction = self.normalized(np.subtract(direction, origin)) + origin if shouldNormalize == True else direction
         self.direction[3] = 0
         self.bouncesLeft = bouncesLeft
 
@@ -45,22 +46,26 @@ class Ray(object):
         #print("directionToLight: ", scene.directionToLight)
         #print("directionPoint: ", directionPoint)
 
-        shadowRay = Ray(offsetStartingPoint, directionPoint,  shouldNormalize = False)
-        #print("origin: ", shadowRay.origin, "   dest: ", shadowRay.direction)
+        shadowRay = Ray(offsetStartingPoint, directionPoint,  shouldNormalize = True)
+        #print("shadowRay origin: ", shadowRay.origin, "   dest: ", shadowRay.direction)
 
-        closestCollisionPoint = shadowRay.getClosestIntersection(scene)[1]
+        closestCollision = shadowRay.getClosestIntersection(scene)
+        closestCollisionObject = closestCollision[2]
+        collisionDistance = closestCollision[0]
 
-        if closestCollisionPoint is None: return False
+        if collisionDistance is None: return False
 
-        if closestCollisionPoint[0] < .00001 and closestCollisionPoint[0] > -.00001 \
-           and closestCollisionPoint[1] < .00001 and closestCollisionPoint[1] > -.00001 \
-           and closestCollisionPoint[2] < .00001 and closestCollisionPoint[2] > -.00001: return False # This is a hack. For some reason rays kept colliding with [0,0,0]
+        if collisionDistance < .00001:
+            farthestObject = shadowRay.getFarthestIntersection(scene)[2]
+            if farthestObject is closestCollisionObject: return False
+            return True # This is a hack. For some reason rays kept colliding with [0,0,0]
 
         return True # shadow ray collided with something. You're in shadow.
 
 
     def getClosestIntersection(self, scene):
         # Test collisions on each object.
+        #print("ray origin: ", self.origin, "     ray direction: ", self.direction)
         closestObject = None
         closestIntersection = (None, None)
         for object in scene.objects:
@@ -70,9 +75,31 @@ class Ray(object):
             if intersection[0] <= closestIntersection[0]:
                 closestIntersection = intersection
                 closestObject = object
-                #distance               intersection point      object
+
+        #print("closestIntersectionPoint: ", closestIntersection[1])
+        #if closestObject is not None: print("closestIntersectionObject: ", closestObject.center)
+
+        #       distance               intersection point      object
         return (closestIntersection[0], closestIntersection[1], closestObject)
 
+    def getFarthestIntersection(self, scene):
+        # Test collisions on each object.
+        #print("ray origin: ", self.origin, "     ray direction: ", self.direction)
+        farthestObject = None
+        farthestIntersection = (None, None)
+        for object in scene.objects:
+            intersection = object.rayIntersection(self)
+            if intersection[0] is None: continue # If the ray didn't hit anything
+            if farthestIntersection[0] is None: farthestIntersection = intersection
+            if intersection[0] >= farthestIntersection[0]:
+                farthestIntersection = intersection
+                farthestObject = object
+
+        #print("closestIntersectionPoint: ", closestIntersection[1])
+        #if closestObject is not None: print("closestIntersectionObject: ", closestObject.center)
+
+        #       distance               intersection point      object
+        return (farthestIntersection[0], farthestIntersection[1], farthestObject)
 
 
 
@@ -93,41 +120,8 @@ class PrimaryRay(Ray):
             return self.computePhongColor(closestIntersection, scene, closestObject)
 
 
-        R1 = -(self.origin - closestIntersection[1])
-        R1[3] = 0
-        R1_Normalized = Ray([0,0,0,0], R1).direction
-        R1_Normalized[3] = 0
-        N = closestIntersection[1] - closestObject.center
-        N_Normalized = Ray([0, 0, 0, 0], N).direction
-        N_Normalized[3] = 0
-        reflectionDirection = R1_Normalized - 2*N_Normalized * (R1_Normalized.dot(N_Normalized))
-        reflectionDirection[3] = 0
-        reflectedRay = ReflectedRay(closestIntersection[1], reflectionDirection + closestIntersection[1],
-                                    bouncesLeft = self.bouncesLeft - 1)
-        """
-        print("\noo: " + str(self.origin) + "     oi:" + str(closestIntersection[1]) + \
-              "\nro: " + str(reflectedRay.origin) + "    rd: " + str(reflectedRay.direction))
-        """
 
-        if self.direction[0] == 0 and self.direction[1] == 0:
-            print("R1: ", R1)
-            print("R1_Normalized: ", R1_Normalized)
-            print("Closest intersection: ", closestIntersection[1])
-            print("N: ", N)
-            print("N_Normalized: ", N_Normalized)
-            print("ReflectionDirection: ", reflectionDirection)
-            print("reflectedRayOrigin: ", reflectedRay.origin)
-            print("reflectedRayDirection: ", reflectedRay.direction)
-            print()
-
-        color = [0, 0, 0]
-        for rgb in range(3):
-            color[rgb] = closestObject.diffuse[rgb] * \
-                         ( scene.ambientLight[rgb] + \
-                           scene.directionalLightColor[rgb] * \
-                           max(0, N_Normalized.dot(scene.directionToLight))  ) +\
-                         scene.directionalLightColor[rgb] * closestObject.specular[rgb] *\
-                         max(0, (reflectedRay.direction-closestIntersection[1]).dot(scene.camera.eye - closestIntersection[1]))**closestObject.phong
+        # If collided, recurse through the collisions and combine
 
         #print(color)
         return color
@@ -137,7 +131,7 @@ class PrimaryRay(Ray):
 
 
 
-        # If collided, recurse through the collisions and combine
+
 
 
 
