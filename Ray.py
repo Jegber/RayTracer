@@ -1,4 +1,5 @@
 import numpy as np
+import Object
 
 class Ray(object):
 
@@ -6,17 +7,15 @@ class Ray(object):
         origin[3] = 0
         self.origin = origin
         direction[3] = 0
-        self.direction = self.normalized(np.subtract(direction, origin)) + origin if shouldNormalize == True else direction
+        self.direction = normalized(a=np.subtract(direction, origin)) + origin if shouldNormalize == True else direction
         self.direction[3] = 0
         self.bouncesLeft = bouncesLeft
 
 
-    def normalized(self, a, axis=-1, order=2):
-        l2 = np.atleast_1d(np.linalg.norm(a, order, axis))
-        l2[l2==0] = 1
-        return (a / np.expand_dims(l2, axis))[0]
-
     def computePhongColor(self, intersection, scene, object):
+        if type(object) is Object.Triangle:
+            return [0, 0, 255]
+
         N = intersection[1] - object.center
         N_Normalized = Ray([0, 0, 0, 0], N).direction
         reflectionDirection = 2*N_Normalized * (N_Normalized.dot(scene.directionToLight)) - (scene.directionToLight)
@@ -127,8 +126,10 @@ class PrimaryRay(Ray):
         return color
 
 
-
-
+def normalized(a, axis=-1, order=2):
+    l2 = np.atleast_1d(np.linalg.norm(a, order, axis))
+    l2[l2==0] = 1
+    return (a / np.expand_dims(l2, axis))[0]
 
 
 

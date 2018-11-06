@@ -1,4 +1,5 @@
 import numpy as np
+import Ray
 
 
 class Object(object):
@@ -63,15 +64,13 @@ class Sphere(Object):
 
 
 
-
-
 class Triangle(Object):
 
     def __init__(self, diffuse = (0, 0, 1),
                  specular = (1, 1, 1), phong = 32,
-                 vertex1=(.3, -.3, -.4),
-                 vertex2=(0, .3, -.1),
-                 vertex3=(-.3, -.3, .2) ):
+                 vertex1=(.3, -.3, -1.4),
+                 vertex2=(0, .3, -1.1),
+                 vertex3=(-.3, -.3, -.8) ):
         super().__init__(diffuse, specular, phong)
         self.vertex1 = vertex1
         self.vertex2 = vertex2
@@ -83,25 +82,30 @@ class Triangle(Object):
         intersectionDist = None
         intersectionPoint = None
 
-        pn = np.cross(self.vertex1, self.vertex2)
+        pn = np.cross(np.subtract(self.vertex3, self.vertex2), np.subtract(self.vertex1, self.vertex2))
+        pn = Ray.normalized(pn)
         vd = np.dot(pn, ray.direction[0:3:1])
 
         if vd == 0: return (intersectionDist, intersectionPoint)
 
         d = np.dot(pn, self.vertex1)
-        vo = -(np.dot(pn, ray.origin[0:3:1]) + d)
+        vo = (np.dot(pn, ray.origin[0:3:1]) + d)
         t = vo / vd
 
         if t < 0: return (intersectionDist, intersectionPoint)
-        if vd > 0: pn = -1 * pn
+
+        r = ray.origin + ray.direction*t
+
+        edge1 = np.subtract(self.vertex2, self.vertex1)
+        edge2 = np.subtract(self.vertex3, self.vertex2)
+        edge3 = np.subtract(self.vertex1, self.vertex3)
+        C1 = r[0:3:1] - self.vertex1
+        C2 = r[0:3:1] - self.vertex2
+        C3 = r[0:3:1] - self.vertex3
+
+        if (np.dot(pn, np.cross(edge1, C1)) > 0 and
+            np.dot(pn, np.cross(edge2, C2)) > 0 and
+            np.dot(pn, np.cross(edge3, C3)) > 0     ): return (1, r)
 
 
-        o = ray.origin
-        d = ray.direction
-        r = [o[0] + d[0]*t, o[1] + d[1]*t, o[2] + d[2]*t]
-
-        print(r)
-        #intersectionDist = 1
-        intersectionPoint = r
-
-        return (intersectionDist, intersectionPoint)
+        return (None, None)

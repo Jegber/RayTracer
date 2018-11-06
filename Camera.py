@@ -8,7 +8,7 @@ from multiprocessing import Pool
 class Camera:
 
     def __init__(self, lookAt=np.array([0,0,-1]), lookFrom=np.array([0,0,0]),
-                lookUp=np.array([0,1,0]), fov=56, xRes=51, yRes=31, aa=0,
+                lookUp=np.array([0,1,0]), fov=56, xRes=101, yRes=31, aa=0,
                 rayBounces = 0 ):
         self.lookAt = np.array([lookAt[0], lookAt[1], lookAt[2], 1])
         self.lookFrom = np.array([lookFrom[0], lookFrom[1], lookFrom[2], 1])
