@@ -124,12 +124,68 @@ class PrimaryRay(Ray):
         if self.bouncesLeft <= 0: # If no more bounces left, return object color
             return self.computePhongColor(closestIntersection, scene, closestObject)
 
+        if closestObject.isReflective():
+
+            n = intersection[1] - closestObject.center
+            n_n = Ray([0, 0, 0, 0], n).direction
+            #print("n_n: ", n_n)
+
+            d = self.origin - intersection[1]
+            d_n = Ray([0, 0, 0, 0], d).direction
+            #print("d_n: ", d_n)
+
+            r = d_n - 2*n_n*(np.dot(d_n, n_n))
+            r_n = -Ray([0, 0, 0, 0], r).direction
+            #print("r_n: ", r_n)
+
+
+            startPoint = [i for i in intersection[1] + (intersection[1]-closestObject.center)*.0000001]
+
+
+            reflectedRay = PrimaryRay(startPoint, r_n + intersection[1], bouncesLeft=self.bouncesLeft-1)
+
+
+
+            return np.multiply(reflectedRay.getColor(scene), .75)
+
+            """
+            d = Ray(intersection[1], self.origin).direction - closestObject.center
+            d_Normalized = Ray([0, 0, 0, 0], d).direction
+            d_Normalized[3] = 0
+            print("d_Normalized: ", d_Normalized)
+
+            N = intersection[1] - closestObject.center
+            N[3] = 0
+            #print("N: ", N)
+            N_Normalized = Ray([0, 0, 0, 0], N).direction
+            print("n_Normalized: ", N_Normalized)
+
+            reflectionDirection = d_Normalized - 2*N_Normalized*(np.dot(d_Normalized, N_Normalized))
+            r_Normalized = Ray([0, 0, 0, 0], reflectionDirection).direction
+            print("r_Normalized: ", reflectionDirection)
+
+
+            startingPoint = intersection[1]
+            directionPoint = intersection[1] + r_Normalized + closestObject.center
+            directionPoint[3] = 0
+            offsetStartingPoint = [i for i in startingPoint + directionPoint * .00001]
+            print("startingPoint: ", startingPoint)
+            print("directionPoint: ", directionPoint)
+
+
+            reflectedRay = PrimaryRay(offsetStartingPoint, directionPoint, bouncesLeft = self.bouncesLeft - 1)
+            print("reflectedRayOrigin: ", reflectedRay.origin)
+            print("reflectedRayDirection: ", reflectedRay.direction)
+
+
+            return np.multiply(reflectedRay.getColor(scene), .75)
+            """
 
 
         # If collided, recurse through the collisions and combine
 
         #print(color)
-        return color
+        return self.computePhongColor(closestIntersection, scene, closestObject)
 
 
 def normalized(a, axis=-1, order=2):

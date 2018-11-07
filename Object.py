@@ -4,10 +4,15 @@ import Ray
 
 class Object(object):
 
-    def __init__(self, diffuse = (1, 1, 1), specular = (1, 1, 1), phong = 4):
+    def __init__(self, diffuse = (1, 1, 1), specular = (1, 1, 1), phong = 4, reflective=[0, 0, 0]):
         self.diffuse = diffuse
         self.specular = specular
         self.phong = phong
+        self.reflective = reflective
+
+    def isReflective(self):
+        if self.reflective == [0, 0, 0]: return False
+        return True
 
 
 
@@ -18,8 +23,9 @@ class Sphere(Object):
 
     def __init__(self, diffuse = (1, 0, 0),
                  specular = (1, 1, 1), phong = 4,
-                 center=(1, 1, -10), radius=1):
-        super().__init__(diffuse, specular, phong)
+                 center=(1, 1, -10), radius=1,
+                 reflective=[0, 0, 0]):
+        super().__init__(diffuse, specular, phong, reflective)
         self.center = np.array([center[0], center[1], center[2], 1])
         self.radius = radius
 
@@ -68,10 +74,11 @@ class Triangle(Object):
 
     def __init__(self, diffuse = (0, 0, 1),
                  specular = (1, 1, 1), phong = 32,
+                 reflective=[0, 0, 0],
                  vertex1=(.3, -.3, -1.4),
                  vertex2=(0, .3, -1.1),
                  vertex3=(-.3, -.3, -.8) ):
-        super().__init__(diffuse, specular, phong)
+        super().__init__(diffuse, specular, phong, reflective)
         self.vertex1 = vertex1
         self.vertex2 = vertex2
         self.vertex3 = vertex3
@@ -82,7 +89,7 @@ class Triangle(Object):
 
     # If ray intersects, returns the intersection distance and intersect point. Else returns None.
     def rayIntersection(self, ray):
-
+        """
         notInTriangle = (None, None)
 
         orig = ray.origin[0:3:1]
@@ -125,23 +132,23 @@ class Triangle(Object):
 
 
         return (np.linalg.norm(P), P)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         """
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         intersectionDist = None
         intersectionPoint = None
 
@@ -176,4 +183,3 @@ class Triangle(Object):
 
 
         return (t, r)
-        """
