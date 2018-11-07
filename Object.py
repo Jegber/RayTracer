@@ -82,18 +82,80 @@ class Triangle(Object):
 
     # If ray intersects, returns the intersection distance and intersect point. Else returns None.
     def rayIntersection(self, ray):
+
+        notInTriangle = (None, None)
+
+        orig = ray.origin[0:3:1]
+        dir = ray.direction[0:3:1]
+
+
+        v1v2 = np.subtract(self.vertex2, self.vertex1)
+        v1v3 = np.subtract(self.vertex3, self.vertex1)
+        N = np.cross(v1v2, v1v3)
+        area2 = np.linalg.norm(N)
+
+        # Finding P
+        NdotRayDirection = np.dot(N, dir)
+
+        if np.abs(NdotRayDirection) < .0000000001: return notInTriangle
+
+        d = np.dot(N, self.vertex1)
+
+        t = (np.dot(N, orig) + d) / NdotRayDirection
+
+        if t < 0: return notInTriangle
+        P = orig + t * dir
+
+        edge0 = np.subtract(self.vertex2, self.vertex1)
+        vp0 = P - self.vertex1
+        C = np.cross(edge0, vp0)
+        if np.dot(N, C) < 0: return notInTriangle
+
+        edge1 = np.subtract(self.vertex3, self.vertex2)
+        vp1 = P - self.vertex2
+        C = np.cross(edge1, vp1)
+        if np.dot(N, C) < 0: return notInTriangle
+
+        edge2 = np.subtract(self.vertex1, self.vertex3)
+        vp2 = P - self.vertex3
+        C = np.cross(edge2, vp2)
+        if np.dot(N, C) < 0: return notInTriangle
+
+        P = np.append(P, 0)
+
+
+        return (np.linalg.norm(P), P)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        """
         intersectionDist = None
         intersectionPoint = None
 
-        #pn = np.cross(np.subtract(self.vertex3, self.vertex2), np.subtract(self.vertex1, self.vertex2))
-        #pn = Ray.normalized(pn)
+
         vd = np.dot(self.plane_normal, ray.direction[0:3:1])
 
         if vd == 0: return (intersectionDist, intersectionPoint)
 
         d = np.dot(self.plane_normal, self.vertex1)
         vo = (np.dot(self.plane_normal, ray.origin[0:3:1]) + d)
-        t = vo / vd
+        #t = vo / vd
+        #    t = (N.dotProduct(orig) + d) / NdotRayDirection;
+        t = (np.dot(self.plane_normal, ray.origin[0:3:1]) + d) / np.dot(self.plane_normal, ray.direction[0:3:1])
+
         #print("t: ", t)
 
         if t < 0: return (intersectionDist, intersectionPoint)
@@ -108,9 +170,10 @@ class Triangle(Object):
         C2 = r[0:3:1] - self.vertex2
         C3 = r[0:3:1] - self.vertex3
 
-        if (  np.dot(self.plane_normal, np.cross(edge1, C1)) > 0 and
-              np.dot(self.plane_normal, np.cross(edge2, C2)) > 0 and
-              np.dot(self.plane_normal, np.cross(edge3, C3)) > 0      ): return (t, r)
+        if (  np.dot(self.plane_normal, np.cross(edge1, C1)) < 0 or
+              np.dot(self.plane_normal, np.cross(edge2, C2)) < 0 or
+              np.dot(self.plane_normal, np.cross(edge3, C3)) < 0      ): return (None, None)
 
 
-        return (None, None)
+        return (t, r)
+        """
